@@ -1,31 +1,48 @@
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
-function Navbar() {
+export default function Navbar() {
+
+  const navigate = useNavigate();   // ✅ DEFINE IT
 
   const email = localStorage.getItem("email");
 
   const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = "/login";
+    localStorage.removeItem("token");
+    localStorage.removeItem("email");
+    navigate("/login");
+    window.location.reload(); // refresh state
   };
 
   return (
-    <AppBar position="static">
-      <Toolbar>
-        <Typography sx={{ flexGrow: 1 }}>
+    <AppBar position="fixed">
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        
+        <Typography variant="h6">
           Blog App
         </Typography>
 
-        <Typography sx={{ mr: 2 }}>
-          {email}
-        </Typography>
+        <div>
+          <Button color="inherit">
+            {email}
+          </Button>
 
-        <Button color="inherit" onClick={handleLogout}>
-          LOGOUT
-        </Button>
+          <Button
+            color="inherit"
+            onClick={() => navigate("/profile")}
+          >
+            PROFILE
+          </Button>
+
+          <Button
+            color="inherit"
+            onClick={handleLogout}
+          >
+            LOGOUT
+          </Button>
+        </div>
+
       </Toolbar>
     </AppBar>
   );
 }
-
-export default Navbar;

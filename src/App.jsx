@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
+import Profile from "./pages/Profile";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -13,6 +14,8 @@ function App() {
 
       <Routes>
         <Route path="/" element={token ? <Home /> : <Navigate to="/login" />} />
+
+        <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />

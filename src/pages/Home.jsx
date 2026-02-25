@@ -74,6 +74,23 @@ export default function Home() {
     }
   };
 
+  const timeAgo = (dateString) => {
+  const now = new Date();
+  const postTime = new Date(dateString);
+  const seconds = Math.floor((now - postTime) / 1000);
+
+  if (seconds < 60) return `${seconds} sec ago`;
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days} day${days > 1 ? "s" : ""} ago`;
+};
+
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -118,7 +135,7 @@ export default function Home() {
             <Typography variant="h6">{post.title}</Typography>
 
             <Typography variant="body2" color="text.secondary">
-              {new Date(post.createdAt).toLocaleString()}
+              {timeAgo(post.createdAt)}
             </Typography>
 
             <Typography sx={{ mt: 1, mb: 2 }}>{post.content}</Typography>
