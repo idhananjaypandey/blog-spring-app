@@ -7,14 +7,17 @@ import {
   CardContent,
   Typography,
   Button,
-  TextField
+  TextField,
 } from "@mui/material";
 
 export default function Home() {
-
   const [posts, setPosts] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+
+  const [editingId, setEditingId] = useState(null);
+
+  const loggedInEmail = localStorage.getItem("email");
 
   // 🔥 Fetch posts
   const fetchPosts = async () => {
@@ -28,24 +31,44 @@ export default function Home() {
 
   // 🔥 Create post
   const handlePost = async () => {
-    if (!title || !content) {
-      alert("Please fill all fields");
-      return;
-    }
+    if (!title || !content) return;
 
     try {
-      const res = await API.post("/api/posts", {
-        title,
-        content
-      });
+      if (editingId) {
+        const res = await API.put(`/api/posts/${editingId}`, {
+          title,
+          content,
+        });
 
-      // Add new post on top instantly
-      setPosts([res.data, ...posts]);
+        setPosts(posts.map((p) => (p.id === editingId ? res.data : p)));
 
-      // Clear form
+        setEditingId(null);
+      } else {
+        const res = await API.post("/api/posts", {
+          title,
+          content,
+        });
+
+        setPosts([res.data, ...posts]);
+      }
+
       setTitle("");
       setContent("");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
+  const handleEdit = (post) => {
+    setTitle(post.title);
+    setContent(post.content);
+    setEditingId(post.id);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await API.delete(`/api/posts/${id}`);
+      setPosts(posts.filter((post) => post.id !== id));
     } catch (err) {
       console.error(err);
     }
@@ -57,11 +80,9 @@ export default function Home() {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
-
       {/* 🔥 POST FORM */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-
           <TextField
             fullWidth
             label="Title"
@@ -83,7 +104,6 @@ export default function Home() {
           <Button variant="contained" onClick={handlePost}>
             POST
           </Button>
-
         </CardContent>
       </Card>
 
@@ -91,23 +111,43 @@ export default function Home() {
       {posts.map((post) => (
         <Card key={post.id} sx={{ mb: 3 }}>
           <CardContent>
-
-            <Typography variant="h6">
-              {post.title}
+            <Typography variant="subtitle2" color="primary">
+              Posted by {post.username}
             </Typography>
+
+            <Typography variant="h6">{post.title}</Typography>
 
             <Typography variant="body2" color="text.secondary">
               {new Date(post.createdAt).toLocaleString()}
             </Typography>
 
-            <Typography sx={{ mt: 1 }}>
-              {post.content}
-            </Typography>
+            <Typography sx={{ mt: 1, mb: 2 }}>{post.content}</Typography>
 
+            {/* 🔥 SHOW BUTTONS ONLY IF OWNER */}
+            {post.email === loggedInEmail && (
+              <>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  sx={{ mr: 2 }}
+                  onClick={() => handleEdit(post)}
+                >
+                  Edit
+                </Button>
+
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleDelete(post.id)}
+                >
+                  Delete
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       ))}
-
     </Container>
   );
 }
